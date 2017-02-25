@@ -27,7 +27,6 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/serf/coordinate"
 	"github.com/hashicorp/serf/serf"
-	"github.com/shirou/gopsutil/host"
 )
 
 const (
@@ -612,24 +611,7 @@ func (a *Agent) makeRandomID() (string, error) {
 // high for us if this changes, so we will persist it either way. This will let
 // gopsutil change implementations without affecting in-place upgrades of nodes.
 func (a *Agent) makeNodeID() (string, error) {
-	// Try to get a stable ID associated with the host itself.
-	info, err := host.Info()
-	if err != nil {
-		a.logger.Printf("[DEBUG] Couldn't get a unique ID from the host: %v", err)
-		return a.makeRandomID()
-	}
-
-	// Make sure the host ID parses as a UUID, since we don't have complete
-	// control over this process.
-	id := strings.ToLower(info.HostID)
-	if _, err := uuid.ParseUUID(id); err != nil {
-		a.logger.Printf("[DEBUG] Unique ID %q from host isn't formatted as a UUID: %v",
-			id, err)
-		return a.makeRandomID()
-	}
-
-	a.logger.Printf("[DEBUG] Using unique ID %q from host as node ID", id)
-	return id, nil
+	return a.makeRandomID()
 }
 
 // setupNodeID will pull the persisted node ID, if any, or create a random one
